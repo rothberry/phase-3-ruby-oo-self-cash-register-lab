@@ -1,70 +1,92 @@
+require 'pry'
 
 class CashRegister
 
-  attr_reader :discount, :items_array
+  attr_reader :discount#, :items
   attr_accessor :total
 
-  @@all = []
-
+  # optional arg???
   def initialize(discount=0)
     @total = 0
+    # self.total = 0 # is the as ^^^
     @discount = discount
-    @items_array = []
-
-    @@all << self
+    @items = []
+    # @last_transaction = 0
+    # [{title, price, quantity}, {} ...]
   end
 
-  def self.all
-    @@all
+  def get_total_by_list
+    p "get total"
+    @items.map do |item|
+      item[:price] * item[:quantity]
+    end.sum
   end
 
-  # !HOW TO DELETE AN INSTANCE
-  def delete
-    @@all = @@all.filter{|p| p != self}
-    puts "#{@name} removed from system"
-  end
- 
+
+  
+  # def total=(new_total)
+  #   p "set total"
+  #   @total = new_total
+  # end
 
   def add_item(title, price, quantity=1)
-    # ! FIRST ITERATION
-    # quantity.times do 
-    #   @items_array.push({title: title, price: price})
-    # end
-    @items_array.push({title: title, price: price, quantity: quantity})
+    # expect to increase the total by price
     @total += (price * quantity)
+    # @last_transaction = price * quantity
+    # quantity.times do
+    #   @items.push(title)
+    # end
+    
+    # with holding onto items
+    @items.push({title: title, price: price, quantity: quantity})
   end
   
   def apply_discount
-    if @discount > 0
-      @total = ((100 - @discount) / 100.0 * @total )
-      return "After the discount, the total comes to $#{@total.to_i}."
-    else 
+    if discount == 0
       return "There is no discount to apply."
+    else
+      # ex: discount = 20
+      # total = 1000 => 800
+      # @total = @total - (@discount).to_f / 100 * @total
+      self.total = self.total - (self.discount).to_f / 100 * self.total
+      # total = total - (discount).to_f / 100 * total
+      return "After the discount, the total comes to $#{@total.to_i}."
     end
   end
-  
-  def items
-    # binding.pry
-    # ! FIRST ITERATION
-    # self.items_array.map do |item|
-    #   item[:title]
-    # end
 
-    item_name_array = []
-    self.items_array.each do |item|
-      item[:quantity].times do
-        item_name_array << item[:title]
+  def list_items
+    # loop through our @items
+    # output all the titles with their respective quantities
+    
+    # if quantities are always 1
+    # @items.map { |i| i[:title] }
+    
+    # if quantities are whatever?
+    # how to get in input array of n items, and on 
+    # output array of m >= n items
+    output = []
+    @items.each do |item|
+      item[:quantity].times do 
+        output << item[:title]
       end
     end
-    return item_name_array
+    return output
   end
-  
+
   def void_last_transaction
     # binding.pry
-    if self.items_array.length > 0
-      item_to_be_removed = self.items_array.pop
-      @total -= (item_to_be_removed[:price] * item_to_be_removed[:quantity])
-    end
+    # need to remove the last item hash in list
+    last_item = self.items.pop
+    # subtract price * quantity back into total
+    self.total -= (last_item[:price] * last_item[:quantity])
   end
 
 end
+
+puts "TESTING..."
+cash_register = CashRegister.new
+cash_register_with_discount = CashRegister.new(20)
+
+p cash_register.total
+
+binding.pry
